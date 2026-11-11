@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos' Clock Matrix Calculator</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+        }
+
+        .control-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="number"] {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 70px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            outline: 2px solid var(--accent);
+            border-color: transparent;
+        }
+
+        .toggle-btn {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--accent);
+            color: var(--bg-color);
+            border-color: var(--accent);
+        }
+
+        .toggle-btn#chronosBtn.active {
+            background-color: #818cf8;
+            border-color: #818cf8;
+            color: #000;
+            box-shadow: 0 0 15px rgba(129, 140, 248, 0.4);
+        }
+
+        .matrix-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .matrix-layout {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .input-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .clocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .clock-card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .clock-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .clock-op-indicator {
+            color: var(--accent);
+        }
+
+        .clock-container {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .clock-digital {
+            margin-top: 0.75rem;
+            font-family: monospace;
+            font-size: 1.125rem;
+            background-color: rgba(255,255,255,0.05);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            color: var(--accent);
+        }
+
+        .result-section {
+            background-color: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .result-clock {
+            width: 240px;
+            height: 240px;
+        }
+
+        .result-digital {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 1rem;
+        }
+
+        .rules-reminder {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background-color: rgba(255,255,255,0.02);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--border);
+            width: 100%;
+        }
+
+        .rules-reminder.chronos-active {
+            border-left-color: #818cf8;
+            background-color: rgba(129, 140, 248, 0.05);
+        }
+
+        /* SVG Hand Styling */
+        .hand {
+            stroke-linecap: round;
+            transform-origin: 100px 100px;
+        }
+        .hour-hand {
+            stroke: var(--text-main);
+            stroke-width: 6;
+        }
+        .minute-hand {
+            stroke: var(--accent);
+            stroke-width: 4;
+        }
+        .result-section .minute-hand {
+            stroke: #a855f7;
+        }
+        .center-dot {
+            fill: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Chronos' Clock Matrix Calculator</h1>
+        <p>Drag the hands of the matrix to blend alternative dimensional times</p>
+    </header>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label for="clockCount">Clocks:</label>
+            <input type="number" id="clockCount" min="1" max="12" value="3">
+        </div>
+
+        <div class="control-group">
+            <label>Mode:</label>
+            <button class="toggle-btn active" id="addModeBtn">ADDITION (+)</button>
+            <button class="toggle-btn" id="subModeBtn">SUBTRACTION (−)</button>
+        </div>
+
+        <div class="control-group">
+            <button class="toggle-btn" id="chronosBtn">CHRONOS' RULES ⏳</button>
+        </div>
+    </div>
+
+    <div class="matrix-layout">
+        <!-- Input Matrix Grid -->
+        <div class="input-section">
+            <div class="clocks-grid" id="clocksGrid"></div>
+        </div>
+
+        <!-- Unified Calculation Output -->
+        <div class="result-section">
+            <h2>Chronos Matrix Target</h2>
+            <div class="clock-container result-clock" id="resultClockContainer"></div>
+            <div class="result-digital" id="resultDigital">12:00</div>
+            <div class="rules-reminder" id="rulesReminder">
+                Standard Time Math Active. Base 60 carry over applied to hours.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // System State Setup
+    let clocksData = [];
+    let isAddition = true;
+    let chronosRulesActive = false;
+
+    // DOM Bindings
+    const clockCountInput = document.getElementById('clockCount');
+    const addModeBtn = document.getElementById('addModeBtn');
+    const subModeBtn = document.getElementById('subModeBtn');
+    const chronosBtn = document.getElementById('chronosBtn');
+    const clocksGrid = document.getElementById('clocksGrid');
+    const resultClockContainer = document.getElementById('resultClockContainer');
+    const resultDigital = document.getElementById('resultDigital');
+    const rulesReminder = document.getElementById('rulesReminder');
+
+    // Event Watchers
+    clockCountInput.addEventListener('change', (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 12) val = 12;
+        e.target.value = val;
+        syncClockMatrix(val);
+    });
+
+    addModeBtn.addEventListener('click', () => {
+        isAddition = true;
+        addModeBtn.classList.add('active');
+        subModeBtn.classList.remove('active');
+        calculateMatrix();
+    });
+
+    subModeBtn.addEventListener('click', () => {
+        isAddition = false;
+        subModeBtn.classList.add('active');
+        addModeBtn.classList.remove('active');
+        calculateMatrix();
+    });
+
+    chronosBtn.addEventListener('click', () => {
+        chronosRulesActive = !chronosRulesActive;
+        chronosBtn.classList.toggle('active', chronosRulesActive);
+        updateRulesDisplay();
+        calculateMatrix();
+    });
+
+function updateRulesDisplay() {
+if (chronosRulesActive) {
+rulesReminder.classList.add('chronos-active');
+rulesReminder.innerHTML = <strong>Chronos Rules Overrides:</strong><br> • Minute at 12 = Value 0.<br> • Fractional minutes snap to closest tick (lowest if tied).<br> • Sum maps directly to matching index locations modulo 12 / 24.;
+} else {
+rulesReminder.classList.remove('chronos-active');
+rulesReminder.innerHTML = Standard Time Math Active. Base 60 carry over applied to hours.;
+}
+}
+// Engine Core: Setup and Draw SVG Face templates
+function generateClockFaceSVG(idPrefix, isInteractive) {
+let markers = '';
+for (let i = 1; i <= 12; i++) {
+const angle = (i * 30) * Math.PI / 180;
+const x1 = 100 + 80 * Math.sin(angle);
+const y1 = 100 - 80 * Math.cos(angle);
+const x2 = 100 + 90 * Math.sin(angle);
+const y2 = 100 - 90 * Math.cos(angle);
+markers += <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#475569" stroke-width="3"/>;
+// Major numeric indices
+const tx = 100 + 68 * Math.sin(angle);
+const ty = 100 - 68 * Math.cos(angle) + 4;
+markers += <text x="${tx}" y="${ty}" fill="#94a3b8" font-size="11" font-weight="bold" text-anchor="middle">${i}</text>;
+}
+return <svg viewBox="0 0 200 200" width="100%" height="100%" id="${idPrefix}_svg"> <circle cx="100" cy="100" r="95" fill="#0f172a" stroke="#334155" stroke-width="4"/> ${markers} <line x1="100" y1="100" x2="100" y2="45" class="hand hour-hand" id="${idPrefix}_hour"/> <line x1="100" y1="100" x2="100" y2="25" class="hand minute-hand" id="${idPrefix}_minute"/> <circle cx="100" cy="100" r="5" class="center-dot"/> </svg>;
+}
+function syncClockMatrix(count) {
+// Safe incremental cache scaling
+while (clocksData.length < count) {
+clocksData.push({ hour: 3, minute: 0 });
+}
+if (clocksData.length > count) {
+clocksData = clocksData.slice(0, count);
+}
+clocksGrid.innerHTML = '';
+clocksData.forEach((clock, index) => {
+const card = document.createElement('div');
+card.className = 'clock-card';
+const opSign = index === 0 ? '' : (isAddition ? '+' : '−');
+card.innerHTML =  <div class="clock-header"> <span>Clock #${index + 1}</span> <span class="clock-op-indicator">${opSign}</span> </div> <div class="clock-container" id="container_${index}"> ${generateClockFaceSVG(input_${index}, true)} </div> <div class="clock-digital" id="digital_${index}">03:00</div> ;
+clocksGrid.appendChild(card);
+setupDragInteractions(index);
+updateVisualClockHands(input_${index}, clock.hour, clock.minute);
+document.getElementById(digital_${index}).textContent = formatDigital(clock.hour, clock.minute);
+});
+calculateMatrix();
+}
+function updateVisualClockHands(idPrefix, hr, min) {
+const minAngle = min * 6;
+const hrAngle = (hr % 12) * 30 + min * 0.5;
+const hrHand = document.getElementById(${idPrefix}_hour);
+const minHand = document.getElementById(${idPrefix}_minute);
+if (hrHand && minHand) {
+hrHand.setAttribute('transform', rotate(${hrAngle}));
+minHand.setAttribute('transform', rotate(${minAngle}));
+}
+}
+function formatDigital(hr, min) {
+let roundedMin = Math.round(min);
+if (roundedMin === 60) roundedMin = 59; // Cap boundaries safely
+return ${String(hr).padStart(2, '0')}:${String(roundedMin).padStart(2, '0')};
+}
+// Capture Interaction & Angle math Tracking
+function setupDragInteractions(index) {
+const container = document.getElementById(container_${index});
+function handlePointerEvent(e) {
+const rect = container.getBoundingClientRect();
+const centerX = rect.left + rect.width / 2;
+const centerY = rect.top + rect.height / 2;
+const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+const rad = Math.atan2(clientX - centerX, centerY - clientY);
+let deg = rad * 180 / Math.PI;
+if (deg < 0) deg += 360;
+// Target calculations defaulting to setting accurate minutes dynamically
+let calculatedMinute = deg / 6;
+// Derive smooth continuous relative hour selection
+let currentHour = clocksData[index].hour;
+let targetHour = Math.floor(deg / 30);
+if (targetHour === 0) targetHour = 12;
+// Distinguish click sectors for intuitive tracking shifts
+const dist = Math.hypot(clientX - centerX, clientY - centerY);
+const radiusScale = rect.width / 2;
+if (dist < radiusScale * 0.55) {
+clocksData[index].hour = targetHour;
+} else {
+clocksData[index].minute = calculatedMinute;
+// Shift context dynamic hour blend
+let estimatedHour = Math.floor((deg / 30));
+if (estimatedHour === 0) estimatedHour = 12;
+}
+// Real-time computation pipelines
+updateVisualClockHands(input_${index}, clocksData[index].hour, clocksData[index].minute);
+document.getElementById(digital_${index}).textContent = formatDigital(clocksData[index].hour, clocksData[index].minute);
+calculateMatrix();
+}
+let isDragging = false;
+container.addEventListener('mousedown', (e) => { isDragging = true; handlePointerEvent(e); });
+window.addEventListener('mousemove', (e) => { if (isDragging) handlePointerEvent(e); });
+window.addEventListener('mouseup', () => isDragging = false);
+// Mobile Touch Engine compatibility
+container.addEventListener('touchstart', (e) => { isDragging = true; handlePointerEvent(e); e.preventDefault(); });
+window.addEventListener('touchmove', (e) => { if (isDragging) handlePointerEvent(e); });
+window.addEventListener('touchend', () => isDragging = false);
+}
+// Standard vs Custom "Chronos Rule" Math Matrix Core logic
+function calculateMatrix() {
+let totalHours = 0;
+let totalMinutes = 0;
+clocksData.forEach((clock, index) => {
+let hr = clock.hour;
+let min = clock.minute;
+if (chronosRulesActive) {
+// Ruleset A: Snapping midpoint evaluations
+let wholeMin = Math.floor(min);
+let remainder = min - wholeMin;
+if (remainder > 0.5) {
+min = Math.ceil(min);
+} else if (remainder < 0.5) {
+min = Math.floor(min);
+} else {
+min = Math.floor(min); // Equal points break down to lowest index
+}
+// Ruleset B: 12 hand exclusion check
+if (min === 0 || min === 60) {
+min = 0;
+}
+} else {
+min = Math.round(min);
+}
+if (index === 0) {
+totalHours = hr;
+totalMinutes = min;
+} else {
+if (isAddition) {
+totalHours += hr;
+totalMinutes += min;
+} else {
+totalHours -= hr;
+totalMinutes -= min;
+}
+}
+});
+let targetHour = 12;
+let targetMinute = 0;
+if (chronosRulesActive) {
+// Apply chronos-specific value mapping constraints
+let combinedMinutes = totalMinutes;
+// Modulo loop normalization shifts
+if (combinedMinutes > 24) combinedMinutes = combinedMinutes - 24;
+if (combinedMinutes > 12) combinedMinutes = combinedMinutes - 12;
+if (combinedMinutes < 0) {
+while (combinedMinutes < 0) combinedMinutes += 24;
+if (combinedMinutes > 12) combinedMinutes -= 12;
+}
+targetMinute = combinedMinutes;
+// Standard bounding mechanics applied to hour registers
+if (totalHours <= 0) {
+while(totalHours <= 0) totalHours += 12;
+}
+targetHour = totalHours % 12 === 0 ? 12 : (totalHours % 12);
+if (targetHour < 0) targetHour += 12;
+} else {
+// Standard time math mechanics
+let netMinutes = totalHours * 60 + totalMinutes;
+if (netMinutes < 0) {
+while (netMinutes < 0) netMinutes += 720;
+}
+let calculatedHours = Math.floor(netMinutes / 60);
+targetMinute = Math.round(netMinutes % 60);
+targetHour = calculatedHours % 12;
+if (targetHour === 0) targetHour = 12;
+}
+// Render Calculations to Target UI
+updateVisualClockHands('result', targetHour, targetMinute);
+resultDigital.textContent = ${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')};
+}
+// App Initialization Bootloader
+resultClockContainer.innerHTML = generateClockFaceSVG('result', false);
+syncClockMatrix(3);
